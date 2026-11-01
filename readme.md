@@ -4,7 +4,7 @@ A modular, scalable firmware and Home Assistant backend architecture for a multi
 
 ---
 
-## Repository File Structure
+## Repository File Structure (what your Home Assistant file structure should be)
 
 ```text
 └── homeassistant/
@@ -254,28 +254,67 @@ sensor:
 packages:
   load_cell_1: !include
     file: load_cell_template.yaml
-    vars: { num: "1", dout_pin: "21", clk_pin: "19", update_ms: "93ms" }
+    vars:
+      num: "1"
+      dout_pin: "21"
+      clk_pin: "19"
+      update_ms: "93ms"
+
   load_cell_2: !include
     file: load_cell_template.yaml
-    vars: { num: "2", dout_pin: "22", clk_pin: "23", update_ms: "95ms" }
+    vars:
+      num: "2"
+      dout_pin: "23" # <-- Replace with Load 2 DOUT pin
+      clk_pin: "22"  # <-- Replace with Load 2 CLK pin
+      update_ms: "95ms"
+
   load_cell_3: !include
     file: load_cell_template.yaml
-    vars: { num: "3", dout_pin: "32", clk_pin: "33", update_ms: "97ms" }
+    vars:
+      num: "3"
+      dout_pin: "26" # <-- Replace with Load 3 DOUT pin
+      clk_pin: "25"  # <-- Replace with Load 3 CLK pin
+      update_ms: "97ms"
+
   load_cell_4: !include
     file: load_cell_template.yaml
-    vars: { num: "4", dout_pin: "25", clk_pin: "26", update_ms: "99ms" }
+    vars:
+      num: "4"
+      dout_pin: "5" # <-- Replace with Load 4 DOUT pin
+      clk_pin: "4"  # <-- Replace with Load 4 CLK pin
+      update_ms: "99ms"
+
   load_cell_5: !include
     file: load_cell_template.yaml
-    vars: { num: "5", dout_pin: "27", clk_pin: "14", update_ms: "101ms" }
+    vars:
+      num: "5"
+      dout_pin: "13" # <-- Replace with Load 5 DOUT pin
+      clk_pin: "12"  # <-- Replace with Load 5 CLK pin
+      update_ms: "101ms"
+
   load_cell_6: !include
     file: load_cell_template.yaml
-    vars: { num: "6", dout_pin: "12", clk_pin: "13", update_ms: "103ms" }
+    vars:
+      num: "6"
+      dout_pin: "15" # <-- Replace with Load 6 DOUT pin
+      clk_pin: "14"  # <-- Replace with Load 6 CLK pin
+      update_ms: "103ms"
+
   load_cell_7: !include
     file: load_cell_template.yaml
-    vars: { num: "7", dout_pin: "16", clk_pin: "17", update_ms: "105ms" }
+    vars:
+      num: "7"
+      dout_pin: "17" # <-- Replace with Load 7 DOUT pin
+      clk_pin: "16"  # <-- Replace with Load 7 CLK pin
+      update_ms: "105ms"
+
   load_cell_8: !include
     file: load_cell_template.yaml
-    vars: { num: "8", dout_pin: "4",  clk_pin: "18", update_ms: "107ms" }
+    vars:
+      num: "8"
+      dout_pin: "32"  # <-- Replace with Load 8 DOUT pin
+      clk_pin: "27" # <-- Replace with Load 8 CLK pin
+      update_ms: "107ms"
 
 # High-Frequency 100ms MQTT Telemetry Broadcast
 interval:

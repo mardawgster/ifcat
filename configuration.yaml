@@ -1,1 +1,119 @@
-#config.yaml
+## Include all packages in the packages directory
+homeassistant:
+  packages: !include_dir_named packages
+
+## Quality Test Stand REST Commands
+rest_command:
+    quality_test:
+        url: >
+            http://quality.local/rr_gcode?gcode=M92%20U8.88%20M569%20P4%20S1%20M584%20U4%20M203%20U200000%20M906%20U2000%20M201%20U2000%20M566%20U200%20M564%20H0%20S0%0AG91%0AG1%20U9999%20F{{ (states('input_number.stepper_rpm') | float * 360) | int }}%20M18
+        method: GET
+    play_stepper_song:
+        url: >
+          http://quality.local/rr_gcode?gcode=M98%20P%220:/macros/{{ states('input_select.stepper_song') }}.g%22
+        method: GET
+    stepper_stop:
+        url: >
+            http://quality.local/rr_gcode?gcode=M112
+        method: GET
+
+## BLE iBeacon Artifact Tracking Sensors
+template:
+  - sensor:
+      - name: "Assembly 01 Location"
+        unique_id: assembly_01_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('01', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+
+      - name: "Assembly 02 Location"
+        unique_id: assembly_02_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('02', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 03 Location"
+        unique_id: assembly_03_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('03', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 04 Location"
+        unique_id: assembly_04_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('04', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 05 Location"
+        unique_id: assembly_05_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('05', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 06 Location"
+        unique_id: assembly_06_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('06', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 07 Location"
+        unique_id: assembly_07_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('07', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 08 Location"
+        unique_id: assembly_08_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('08', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 09 Location"
+        unique_id: assembly_09_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('09', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 10 Location"
+        unique_id: assembly_10_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('10', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 11 Location"
+        unique_id: assembly_11_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('11', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
+      - name: "Assembly 12 Location"
+        unique_id: assembly_12_location
+        state: >
+          {% from 'ifcat_tracker.jinja' import resolve_location %}
+          {{ resolve_location('12', this.state) | trim }}
+        icon: >
+          {% from 'ifcat_tracker.jinja' import resolve_icon %}
+          {{ resolve_icon(this.state) | trim }}
