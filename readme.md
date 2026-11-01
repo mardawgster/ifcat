@@ -1,5 +1,12 @@
 # Innovation Factory Cyber-Physical Assembly Testbed
 
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-41BDF5?style=for-the-badge&logo=home-assistant&logoColor=white)
+![ESPHome](https://img.shields.io/badge/ESPHome-000000?style=for-the-badge&logo=esphome&logoColor=white)
+![ESP32](https://img.shields.io/badge/ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)
+![MQTT](https://img.shields.io/badge/MQTT-660066?style=for-the-badge&logo=mqtt&logoColor=white)
+![Three.js](https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=threedotjs&logoColor=white)
+![C++](https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+
 A modular, scalable firmware and Home Assistant backend architecture for a multi-station manual assembly testbed. Each assembly station features **8 independent HX711 load cell bins** with real-time digital signal processing (DSP), dynamic part-weight catalog syncing, high-frequency `100ms` MQTT telemetry logging, real-time 3D artifact orientation (`25Hz` / `40ms`) and Bill of Materials (BOM) tracking across stations, and an automated optical encoder artifact quality verification system.
 
 ---
