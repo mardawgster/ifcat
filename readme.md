@@ -24,8 +24,8 @@ A modular, scalable firmware and Home Assistant backend architecture for a multi
     │   └── quality-control-card.yaml         # Lovelace YAML: Quality Check HUD graphic & tactile Quality Controls card
     └── esphome/
         ├── assembly-station-1.yaml           # Station 1 node definition (substitutions, Wi-Fi/OTA, includes common config)
-        ├── assembly-01.yaml              # Smart artifact ESP node definition (includes artifact_config.yaml)
-        ├── madgwick_sensor.h             # Includes computiations for turining raw IMU values into roll, pitch, and yaw angles
+        ├── assembly-01.yaml                  # Smart artifact ESP node definition (includes artifact_config.yaml)
+        ├── madgwick_sensor.h                 # Includes computiations for turining raw IMU values into roll, pitch, and yaw angles
         └── common/
             ├── assembly_station_config.yaml  # Shared station config: 8x load_cell_template includes & 100ms MQTT telemetry
             ├── load_cell_template.yaml       # Parameterized single load-cell DSP, Kalman filter & calibration template
