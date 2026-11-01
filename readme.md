@@ -1,4 +1,5 @@
-# Cyber-Physical Assembly Testbed — Home Assistant & ESPHome Architecture
+# Innovation Factory Cyber-Physical Assembly Testbed
+## Home Assistant & ESPHome Architecture
 
 A modular, scalable firmware and Home Assistant backend architecture for a multi-station manual assembly testbed. Each assembly station features **8 independent HX711 load cell bins** with real-time digital signal processing (DSP), dynamic part-weight catalog syncing, high-frequency `100ms` MQTT telemetry logging, real-time artifact part-tracking across stations, and an automated artifact quality verification system.
 
