@@ -9,19 +9,24 @@ A modular, scalable firmware and Home Assistant backend architecture for a multi
 
 ```text
 └── homeassistant/
-    ├── configuration.yaml                    # Core HA config: enables packages, QC rig logic, stepper REST commands & artifact tracking
+    ├── configuration.yaml                    # Add this to Core HA config: enables packages, QC rig logic, stepper REST commands & artifact tracking
     ├── custom_templates/
     │   └── artifact_tracking.jinja           # Reusable Jinja2 macros for station part-consumption & BOM verification
     ├── packages/
     │   └── parts_catalog.yaml                # Self-contained Master Parts DB, scripts, dropdowns & auto-discovery automations
+    ├── www/
+    │   ├── artifact.glb                      # Artifact 3D Model for IMU Visualizer
+    │   └── imu-visualizer.js                 # Javascript for running IMU Visualizer
     ├── dashboards/
-    │   ├── master_load_cell_stations.yaml    # Lovelace YAML: Master Parts Table, button_card_templates & 8-Bin Station Views
-    │   └── quality_check_card.yaml           # Lovelace YAML: Quality Check HUD graphic & tactile Quality Controls card
+    │   ├── full-assy-line-dashboard.yaml     # Lovelace YAML: full 8 station load cell views with quality check view
+    │   ├── imu-visualizer.yaml               # Lovelace YAML: Artifact IMU Visualizer card
+    │   ├── parts-catalog.yaml                # Lovelace YAML: Parts catalog modification card
+    │   └── quality-control-card.yaml         # Lovelace YAML: Quality Check HUD graphic & tactile Quality Controls card
+
     └── esphome/
         ├── assembly-station-1.yaml           # Station 1 node definition (substitutions, Wi-Fi/OTA, includes common config)
-        ├── assembly-station-2.yaml           # Station 2 node definition
-        ├── assembly-station-3.yaml           # Station 3 node definition
-        ├── artifact-node-1.yaml              # Smart artifact ESP node definition (includes artifact_config.yaml)
+        ├── assembly-01.yaml              # Smart artifact ESP node definition (includes artifact_config.yaml)
+        ├── madgwick_sensor.h             # Includes computiations for turining raw IMU values into roll, pitch, and yaw angles
         └── common/
             ├── assembly_station_config.yaml  # Shared station config: 8x load_cell_template includes & 100ms MQTT telemetry
             ├── load_cell_template.yaml       # Parameterized single load-cell DSP, Kalman filter & calibration template
