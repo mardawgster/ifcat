@@ -1,0 +1,83 @@
+{% macro resolve_location(assembly_id, current_loc, num_stations=6) %}
+  {% set mov_1 = 'binary_sensor.assembly_' ~ assembly_id ~ '_moving' %}
+  {% set mov_2 = 'binary_sensor.assembly_' ~ assembly_id ~ '_assembly_' ~ assembly_id ~ '_moving' %}
+  {% set is_moving = is_state(mov_1, 'on') or is_state(mov_2, 'on') %}
+
+  {% set safe_loc = current_loc if current_loc not in ['unknown', 'unavailable', 'None', ''] else 'Unknown' %}
+
+  {# Tunable Asymmetric Flow Constants #}
+  {% set MIN_VALID_RSSI       = -90.0 %}
+  {% set FORWARD_HANDOFF_DB   = 2 %}   {# Easy, fast handoff from Station N to Station N+1 #}
+  {% set BACKWARD_PENALTY_DB  = 12.0 %}  {# Hard resistance against jumping backward or skipping stations #}
+  {% set CLOSE_CAPTURE_RSSI   = -65.0 %} {# Unmistakable close-range signal right at a station ESP32 #}
+
+  {# Gather RSSI from Stations 1 through 6 #}
+  {% set ns = namespace(stations=[], current_id=0, current_loc_rssi=-100.0) %}
+  {% if safe_loc.startswith('Station ') %}
+    {% set ns.current_id = safe_loc.split(' ')[1] | int(0) %}
+  {% endif %}
+
+  {% for i in range(1, num_stations + 1) %}
+    {% set ent_long  = 'sensor.station_' ~ i ~ '_assembly_station_' ~ i ~ '_assembly_' ~ assembly_id ~ '_rssi' %}
+    {% set ent_short = 'sensor.assembly_station_' ~ i ~ '_assembly_' ~ assembly_id ~ '_rssi' %}
+    
+    {% if states(ent_long) not in ['unknown', 'unavailable', 'None'] %}
+      {% set val = states(ent_long) | float(-100.0) %}
+    {% else %}
+      {% set val = states(ent_short) | float(-100.0) %}
+    {% endif %}
+    
+    {% set st_name = 'Station ' ~ i %}
+    {% set ns.stations = ns.stations + [{'id': i, 'name': st_name, 'rssi': val}] %}
+    {% if i == ns.current_id %}
+      {% set ns.current_loc_rssi = val %}
+    {% endif %}
+  {% endfor %}
+
+  {% set ranked = ns.stations | sort(attribute='rssi', reverse=true) %}
+  {% set best = ranked[0] %}
+  {% set lead_over_current = best.rssi - ns.current_loc_rssi %}
+
+  {# Resolution Logic #}
+  {% if best.rssi < MIN_VALID_RSSI %}
+    {{ safe_loc if safe_loc not in ['Unknown', 'Out of Range'] else 'Out of Range' }}
+
+  {% elif ns.current_id == 0 %}
+    {# Initial acquisition from Unknown / Out of Range #}
+    {{ best.name }}
+
+  {% elif best.id == ns.current_id %}
+    {# Current station is still the strongest #}
+    {{ safe_loc }}
+
+  {# Case 1: Expected Forward Handoff (Station N -> Station N+1, or loop-back 6 -> 1) #}
+  {% elif best.id == (ns.current_id + 1) or (ns.current_id == num_stations and best.id == 1) %}
+    {% if (is_moving and lead_over_current >= FORWARD_HANDOFF_DB) or (best.rssi >= CLOSE_CAPTURE_RSSI and lead_over_current >= 5.0) %}
+      {{ best.name }}
+    {% else %}
+      {{ safe_loc }}
+    {% endif %}
+
+  {# Case 2: Backward Jump or Skipping Stations (Heavily Guarded Against False Bounces) #}
+  {% else %}
+    {% if best.rssi >= CLOSE_CAPTURE_RSSI and lead_over_current >= BACKWARD_PENALTY_DB %}
+      {{ best.name }}
+    {% else %}
+      {{ safe_loc }}
+    {% endif %}
+  {% endif %}
+{% endmacro %}
+
+{% macro resolve_icon(loc_state) %}
+  {% set s = loc_state | trim %}
+  {% if s.startswith('Station ') %}
+    {% set num = s.split(' ')[1] | int(0) %}
+    {% if 1 <= num <= 6 %}
+      mdi:numeric-{{ num }}-circle
+    {% else %}
+      mdi:help-circle-outline
+    {% endif %}
+  {% else %}
+    mdi:wifi-strength-off
+  {% endif %}
+{% endmacro %}

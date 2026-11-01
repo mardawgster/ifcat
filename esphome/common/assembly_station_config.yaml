@@ -1,0 +1,263 @@
+
+time:
+  - platform: sntp
+    id: sntp_time
+    servers:
+      - ntp.mgmt.lan
+    update_interval: 1min
+
+mqtt:
+  broker: homeassistant.servers.lan
+  discovery: false
+  username: mosquitto
+  password: ILoveSensors
+    
+captive_portal:
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 100ms
+    window: 70ms
+    active: false
+    continuous: true
+
+light:
+  - platform: neopixelbus
+    variant: ws2811
+    pin: 33
+    num_leds: 7
+    type: "RGB"
+    name: "Station 2 LED Strip"
+    id: strip
+  - platform: partition
+    name: "LED 1"
+    segments: 
+      - id: strip
+        from: 6
+        to: 6 
+  - platform: partition
+    name: "LED 2"
+    segments: 
+      - id: strip
+        from: 5
+        to: 5 
+  - platform: partition
+    name: "LED 7"
+    segments: 
+      - id: strip
+        from: 0
+        to: 0 
+  - platform: partition
+    name: "LED 6"
+    segments: 
+      - id: strip
+        from: 1
+        to: 1 
+  - platform: partition
+    name: "LED 5"
+    segments: 
+      - id: strip
+        from: 2
+        to: 2 
+  - platform: partition
+    name: "LED 4"
+    segments: 
+      - id: strip
+        from: 3
+        to: 3 
+  - platform: partition
+    name: "LED 3"
+    segments: 
+      - id: strip
+        from: 4
+        to: 4 
+        
+packages:
+  load_cell_1: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "1"
+      dout_pin: "21"
+      clk_pin: "19"
+      update_ms: "93ms"
+
+  load_cell_2: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "2"
+      dout_pin: "23" # <-- Replace with Load 2 DOUT pin
+      clk_pin: "22"  # <-- Replace with Load 2 CLK pin
+      update_ms: "95ms"
+
+  load_cell_3: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "3"
+      dout_pin: "26" # <-- Replace with Load 3 DOUT pin
+      clk_pin: "25"  # <-- Replace with Load 3 CLK pin
+      update_ms: "97ms"
+
+  load_cell_4: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "4"
+      dout_pin: "5" # <-- Replace with Load 4 DOUT pin
+      clk_pin: "4"  # <-- Replace with Load 4 CLK pin
+      update_ms: "99ms"
+
+  load_cell_5: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "5"
+      dout_pin: "13" # <-- Replace with Load 5 DOUT pin
+      clk_pin: "12"  # <-- Replace with Load 5 CLK pin
+      update_ms: "101ms"
+
+  load_cell_6: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "6"
+      dout_pin: "15" # <-- Replace with Load 6 DOUT pin
+      clk_pin: "14"  # <-- Replace with Load 6 CLK pin
+      update_ms: "103ms"
+
+  load_cell_7: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "7"
+      dout_pin: "17" # <-- Replace with Load 7 DOUT pin
+      clk_pin: "16"  # <-- Replace with Load 7 CLK pin
+      update_ms: "105ms"
+
+  load_cell_8: !include
+    file: load_cell_template.yaml
+    vars:
+      num: "8"
+      dout_pin: "32"  # <-- Replace with Load 8 DOUT pin
+      clk_pin: "27" # <-- Replace with Load 8 CLK pin
+      update_ms: "107ms"
+
+sensor:
+  - platform: internal_temperature
+    name: "Internal Temperature"
+    update_interval: 5s
+    accuracy_decimals: 1
+    filters:
+      - throttle_average: 10s
+
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 1
+    name: "Assembly 01 RSSI"
+    filters: &rssi_filters
+      - quantile:          # <-- Tracks the upper envelope (ignores sudden dips from hands/bodies!)
+          window_size: 6
+          send_every: 1
+          send_first_at: 1
+          quantile: 0.85
+      - exponential_moving_average:
+          alpha: 0.60      # Fast response to genuine station transitions
+          send_every: 1
+      - throttle: 250ms    # Max 4 clean updates/sec to Home Assistant
+      - timeout:
+          timeout: 15s
+          value: -100.0
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 0
+    name: "Assembly 00 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 2
+    name: "Assembly 02 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 3
+    name: "Assembly 03 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 4
+    name: "Assembly 04 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 5
+    name: "Assembly 05 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 6
+    name: "Assembly 06 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 7
+    name: "Assembly 07 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 8
+    name: "Assembly 08 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 9
+    name: "Assembly 09 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 10
+    name: "Assembly 10 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 11
+    name: "Assembly 11 RSSI"
+    filters: *rssi_filters
+  - platform: ble_rssi
+    ibeacon_uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+    ibeacon_major: 12
+    name: "Assembly 12 RSSI"
+    filters: *rssi_filters
+
+# 3. Telemetry Publish Interval
+interval:
+  - interval: 100ms
+    then:
+      - if:
+          condition:
+            lambda: 'return id(sntp_time).now().is_valid();'
+          then:
+            - mqtt.publish_json:
+                topic: !lambda 'return "testbed/telemetry/" + App.get_name();'
+                payload: |-
+                  // Generate precise millisecond UNIX timestamp
+                  struct timeval tv;
+                  gettimeofday(&tv, NULL);
+                  uint64_t ts_ms = (uint64_t)tv.tv_sec * 1000ULL + (uint64_t)tv.tv_usec / 1000ULL;
+                  
+                  root["timestamp"] = ts_ms;
+                  root["device"] = App.get_name();
+                  
+                  // Load Cell Masses (g) - using has_state() to avoid boot NaNs
+                  root["load1_mass"] = id(load1_mass).has_state() ? id(load1_mass).state : 0.0;
+                  root["load2_mass"] = id(load2_mass).has_state() ? id(load2_mass).state : 0.0;
+                  root["load3_mass"] = id(load3_mass).has_state() ? id(load3_mass).state : 0.0;
+                  root["load4_mass"] = id(load4_mass).has_state() ? id(load4_mass).state : 0.0;
+                  root["load5_mass"] = id(load5_mass).has_state() ? id(load5_mass).state : 0.0;
+                  root["load6_mass"] = id(load6_mass).has_state() ? id(load6_mass).state : 0.0;
+                  root["load7_mass"] = id(load7_mass).has_state() ? id(load7_mass).state : 0.0;
+                  root["load8_mass"] = id(load8_mass).has_state() ? id(load8_mass).state : 0.0;
+                  
+                  // Load Cell Item Counts
+                  root["load1_count"] = id(l1_item_count).has_state() ? id(l1_item_count).state : 0.0;
+                  root["load2_count"] = id(l2_item_count).has_state() ? id(l2_item_count).state : 0.0;
+                  root["load3_count"] = id(l3_item_count).has_state() ? id(l3_item_count).state : 0.0;
+                  root["load4_count"] = id(l4_item_count).has_state() ? id(l4_item_count).state : 0.0;
+                  root["load5_count"] = id(l5_item_count).has_state() ? id(l5_item_count).state : 0.0;
+                  root["load6_count"] = id(l6_item_count).has_state() ? id(l6_item_count).state : 0.0;
+                  root["load7_count"] = id(l7_item_count).has_state() ? id(l7_item_count).state : 0.0;
+                  root["load8_count"] = id(l8_item_count).has_state() ? id(l8_item_count).state : 0.0;

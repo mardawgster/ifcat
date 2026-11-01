@@ -1,0 +1,369 @@
+# ==========================================================
+# 1. DASHBOARD FORM INPUTS (For Adding / Editing / Deleting)
+# ==========================================================
+input_text:
+  catalog_part_name:
+    name: "Part Name"
+    max: 50
+    icon: mdi:tag-text-outline
+
+input_number:
+  catalog_part_weight:
+    name: "Part Weight (g)"
+    min: 0.01
+    max: 5000
+    step: 0.01
+    mode: box
+    unit_of_measurement: "g"
+    icon: mdi:weight-gram
+
+# ==========================================================
+# 2. STATION LOAD CELL DROPDOWNS (8 Load Cells per Station)
+# Naming convention MUST be: assembly_station_<X>_load_<Y>_part
+# ==========================================================
+input_select:
+  # --- ASSEMBLY STATION 1 ---
+  assembly_station_1_load_1_part:
+    name: "Station 1 - Load 1 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_2_part:
+    name: "Station 1 - Load 2 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_3_part:
+    name: "Station 1 - Load 3 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_4_part:
+    name: "Station 1 - Load 4 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_5_part:
+    name: "Station 1 - Load 5 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_6_part:
+    name: "Station 1 - Load 6 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_7_part:
+    name: "Station 1 - Load 7 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_1_load_8_part:
+    name: "Station 1 - Load 8 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+
+  # --- ASSEMBLY STATION 2 ---
+  assembly_station_2_load_1_part:
+    name: "Station 2 - Load 1 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_2_part:
+    name: "Station 2 - Load 2 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_3_part:
+    name: "Station 2 - Load 3 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_4_part:
+    name: "Station 2 - Load 4 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_5_part:
+    name: "Station 2 - Load 5 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_6_part:
+    name: "Station 2 - Load 6 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_7_part:
+    name: "Station 2 - Load 7 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_2_load_8_part:
+    name: "Station 2 - Load 8 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+
+  # --- ASSEMBLY STATION 3 ---
+  assembly_station_3_load_1_part:
+    name: "Station 3 - Load 1 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_2_part:
+    name: "Station 3 - Load 2 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_3_part:
+    name: "Station 3 - Load 3 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_4_part:
+    name: "Station 3 - Load 4 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_5_part:
+    name: "Station 3 - Load 5 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_6_part:
+    name: "Station 3 - Load 6 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_7_part:
+    name: "Station 3 - Load 7 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_3_load_8_part:
+    name: "Station 3 - Load 8 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+
+  # --- ASSEMBLY STATION 4 ---
+  assembly_station_4_load_1_part:
+    name: "Station 4 - Load 1 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_2_part:
+    name: "Station 4 - Load 2 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_3_part:
+    name: "Station 4 - Load 3 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_4_part:
+    name: "Station 4 - Load 4 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_5_part:
+    name: "Station 4 - Load 5 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_6_part:
+    name: "Station 4 - Load 6 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_7_part:
+    name: "Station 4 - Load 7 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_4_load_8_part:
+    name: "Station 4 - Load 8 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  
+  # --- ASSEMBLY STATION 5 ---
+  assembly_station_5_load_1_part:
+    name: "Station 5 - Load 1 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_2_part:
+    name: "Station 5 - Load 2 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_3_part:
+    name: "Station 5 - Load 3 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_4_part:
+    name: "Station 5 - Load 4 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_5_part:
+    name: "Station 5 - Load 5 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_6_part:
+    name: "Station 5 - Load 6 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_7_part:
+    name: "Station 5 - Load 7 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_5_load_8_part:
+    name: "Station 5 - Load 8 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  
+  # --- ASSEMBLY STATION 6 ---
+  assembly_station_6_load_1_part:
+    name: "Station 6 - Load 1 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_2_part:
+    name: "Station 6 - Load 2 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_3_part:
+    name: "Station 6 - Load 3 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_4_part:
+    name: "Station 6 - Load 4 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_5_part:
+    name: "Station 6 - Load 5 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_6_part:
+    name: "Station 6 - Load 6 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_7_part:
+    name: "Station 6 - Load 7 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+  assembly_station_6_load_8_part:
+    name: "Station 6 - Load 8 Part"
+    options: ["Unassigned"]
+    icon: mdi:package-variant
+    
+# ==========================================================
+# 3. PERSISTENT MASTER PARTS DATABASE SENSOR
+# Automatically saves all parts and weights across HA reboots
+# ==========================================================
+template:
+  - trigger:
+      - platform: event
+        event_type: update_parts_catalog
+    sensor:
+      - name: "Master Parts Catalog"
+        unique_id: master_parts_catalog
+        icon: mdi:database-outline
+        state: "{{ this.attributes.parts | default({}) | count }}"
+        attributes:
+          parts: >
+            {% set current = dict(this.attributes.get('parts', {})) %}
+            {% set action = trigger.event.data.action %}
+            {% set name = trigger.event.data.name | default('') | trim %}
+            {% if action == 'set' and name != '' and name != 'Unassigned' %}
+              {% set weight = trigger.event.data.weight | float(1.0) | round(2) %}
+              {{ dict(current, **{name: weight}) }}
+            {% elif action == 'delete' and name in current %}
+              {% set ns = namespace(d={}) %}
+              {% for k, v in current.items() if k != name %}
+                {% set ns.d = dict(ns.d, **{k: v}) %}
+              {% endfor %}
+              {{ ns.d }}
+            {% else %}
+              {{ current }}
+            {% endif %}
+
+# ==========================================================
+# 4. SCRIPTS FOR SAVE / DELETE BUTTONS ON DASHBOARD
+# ==========================================================
+script:
+  catalog_add_or_update_part:
+    alias: "Catalog - Save or Update Part"
+    sequence:
+      - event: update_parts_catalog
+        event_data:
+          action: "set"
+          name: "{{ states('input_text.catalog_part_name') }}"
+          weight: "{{ states('input_number.catalog_part_weight') }}"
+
+  catalog_delete_part:
+    alias: "Catalog - Delete Part"
+    sequence:
+      - event: update_parts_catalog
+        event_data:
+          action: "delete"
+          name: "{{ states('input_text.catalog_part_name') }}"
+          
+# ==========================================================
+# 5. AUTO-DISCOVERY AUTOMATIONS
+# ==========================================================
+automation:
+  - id: catalog_sync_all_station_dropdowns
+    alias: "Catalog - Sync Dropdown Options Across All Stations"
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: sensor.master_parts_catalog
+      - platform: homeassistant
+        event: start
+    action:
+      - variables:
+          parts_dict: "{{ state_attr('sensor.master_parts_catalog', 'parts') or {} }}"
+          options_list: "{{ ['Unassigned'] + (parts_dict.keys() | list | sort) }}"
+          all_station_dropdowns: >
+            {{ states.input_select
+               | selectattr('object_id', 'match', '^assembly_station_\d+_load_\d+_part$')
+               | map(attribute='entity_id')
+               | list }}
+      - repeat:
+          for_each: "{{ all_station_dropdowns }}"
+          sequence:
+            - variables:
+                current_choice: "{{ states(repeat.item) }}"
+            - action: input_select.set_options
+              target:
+                entity_id: "{{ repeat.item }}"
+              data:
+                options: "{{ options_list }}"
+            - if:
+                - condition: template
+                  value_template: "{{ current_choice in options_list }}"
+              then:
+                - action: input_select.select_option
+                  target:
+                    entity_id: "{{ repeat.item }}"
+                  data:
+                    option: "{{ current_choice }}"
+
+  - id: catalog_push_weights_to_station_esps
+    alias: "Catalog - Push Weight to Station ESPs"
+    mode: queued
+    max: 50
+    trigger:
+      - platform: event
+        event_type: state_changed
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.event.data.entity_id == 'sensor.master_parts_catalog' or
+             (trigger.event.data.entity_id.startswith('input_select.assembly_station_') and
+              trigger.event.data.entity_id.endswith('_part')) }}
+    action:
+      - variables:
+          parts_dict: "{{ state_attr('sensor.master_parts_catalog', 'parts') or {} }}"
+          target_dropdowns: >
+            {% if trigger.event.data.entity_id == 'sensor.master_parts_catalog' %}
+              {{ states.input_select
+                 | selectattr('object_id', 'match', '^assembly_station_\d+_load_\d+_part$')
+                 | map(attribute='entity_id')
+                 | list }}
+            {% else %}
+              {{ [trigger.event.data.entity_id] }}
+            {% endif %}
+      - repeat:
+          for_each: "{{ target_dropdowns }}"
+          sequence:
+            - variables:
+                dropdown_id: "{{ repeat.item }}"
+                selected_part: "{{ states(dropdown_id) }}"
+                # Extract the station number (e.g., '1' from 'input_select.assembly_station_1_load_1_part')
+                station_num: "{{ dropdown_id.split('_')[3] }}"
+                # Convert "input_select.assembly_station_1_load_1_part"
+                # into    "number.station_1_assembly_station_1_load_1_average_part_weight"
+                esp_number_id: >
+                  {{ dropdown_id
+                     | replace('input_select.', 'number.station_' ~ station_num ~ '_')
+                     | replace('_part', '_average_part_weight') }}
+            - if:
+                - condition: template
+                  value_template: "{{ selected_part in parts_dict and states(esp_number_id) not in ['unavailable', 'unknown'] }}"
+              then:
+                - action: number.set_value
+                  target:
+                    entity_id: "{{ esp_number_id }}"
+                  data:
+                    value: "{{ parts_dict[selected_part] }}"

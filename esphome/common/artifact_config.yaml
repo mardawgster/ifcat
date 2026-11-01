@@ -1,0 +1,463 @@
+time:
+  - platform: sntp
+    id: sntp_time
+    # Replace with your local NixOS/router IP to minimize network jitter
+    servers:
+      - ntp.mgmt.lan
+    update_interval: 1min
+
+mqtt:
+  broker: homeassistant.servers.lan
+  discovery: false
+  username: mosquitto
+  password: ILoveSensors
+
+captive_portal:
+
+globals:
+  - id: display_is_on
+    type: bool
+    initial_value: 'true'
+  - id: gyro_is_on
+    type: bool
+    initial_value: 'true'
+
+esp32_ble_beacon:
+  type: iBeacon
+  uuid: "c29ce823-e67a-4e71-bff2-abaa32e77a98"
+  major: ${artifact_num}
+  minor: 0
+  tx_power: "-3"
+  min_interval: 50ms
+  max_interval: 80ms
+  
+interval:
+  - interval: 20ms
+    then:
+      - lambda: |-
+          static uint32_t last_time = 0;
+          uint32_t now = micros();
+          
+          static float gx_offset = 0;
+          static float gy_offset = 0;
+          static float gz_offset = 0;
+          static int cal_count = 0;
+          
+          // INCREASED: 250 samples = 5 seconds of stationary calibration
+          const int CAL_SAMPLES = 250; 
+
+          float ax = id(ax_id)->get_raw_state();
+          float ay = id(ay_id)->get_raw_state();
+          float az = id(az_id)->get_raw_state();
+          float gx_raw = id(gx_id)->get_raw_state();
+          float gy_raw = id(gy_id)->get_raw_state();
+          float gz_raw = id(gz_id)->get_raw_state();
+
+          if (std::isnan(ax) || std::isnan(gx_raw)) return;
+
+          if (cal_count < CAL_SAMPLES) {
+            gx_offset += gx_raw;
+            gy_offset += gy_raw;
+            gz_offset += gz_raw;
+            cal_count++;
+            
+            if (cal_count == CAL_SAMPLES) {
+              gx_offset /= CAL_SAMPLES;
+              gy_offset /= CAL_SAMPLES;
+              gz_offset /= CAL_SAMPLES;
+              last_time = now; 
+            }
+            return; 
+          }
+
+          float gx = gx_raw - gx_offset;
+          float gy = gy_raw - gy_offset;
+          float gz = gz_raw - gz_offset;
+          
+          float dt = (now - last_time) / 1000000.0f;
+          last_time = now;
+
+          global_madgwick.updateIMU(gx, gy, gz, ax, ay, az, dt);
+
+          static uint32_t publish_counter = 0;
+          publish_counter++;
+          
+          // INCREASED RATE: Publish every 2 loops (40ms / 25Hz)
+          if (publish_counter >= 2) { 
+            id(pitch_id)->publish_state(global_madgwick.getPitch());
+            id(roll_id)->publish_state(global_madgwick.getRoll());
+            id(yaw_id)->publish_state(global_madgwick.getYaw());
+            publish_counter = 0;
+          }
+  - interval: 40ms
+    then:
+      - if:
+          condition:
+            lambda: 'return id(sntp_time).now().is_valid();'
+          then:
+            - mqtt.publish_json:
+                # Dynamically creates a topic like: testbed/telemetry/artifact-01
+                topic: !lambda 'return "testbed/telemetry/" + App.get_name();'
+                payload: |-
+                  // Generate a precise millisecond UNIX timestamp at the edge
+                  struct timeval tv;
+                  gettimeofday(&tv, NULL);
+                  uint64_t ts_ms = (uint64_t)tv.tv_sec * 1000ULL + (uint64_t)tv.tv_usec / 1000ULL;
+                  
+                  root["timestamp"] = ts_ms;
+                  root["device"] = App.get_name();
+                  
+                  // Optical Encoder (defaults to 0.0 if not yet spinning)
+                  root["rpm"] = id(rpm_sensor).has_state() ? id(rpm_sensor).state : 0.0;
+                  
+                  // Processed IMU (Madgwick outputs)
+                  root["pitch"] = id(pitch_id).state;
+                  root["roll"] = id(roll_id).state;
+                  root["yaw"] = id(yaw_id).state;
+                  
+                  // Raw IMU
+                  root["ax"] = id(ax_id)->get_raw_state();
+                  root["ay"] = id(ay_id)->get_raw_state();
+                  root["az"] = id(az_id)->get_raw_state();
+                  root["gx"] = id(gx_id)->get_raw_state();
+                  root["gy"] = id(gy_id)->get_raw_state();
+                  root["gz"] = id(gz_id)->get_raw_state();
+script:
+  - id: success_beep
+    mode: single
+    then:
+      - output.set_level:
+          id: buzzer
+          level: 50%
+      - delay: 150ms
+      - output.set_level:
+          id: buzzer
+          level: 0%
+      - delay: 100ms
+      - output.set_level:
+          id: buzzer
+          level: 50%
+      - delay: 200ms
+      - output.set_level:
+          id: buzzer
+          level: 0%
+          
+output:
+  - platform: ledc
+    id: builtin_led
+    inverted: true
+    pin: 10
+  - platform: ledc
+    id: backlight
+    inverted: true
+    pin: 27
+  - platform: ledc
+    id: buzzer
+    inverted: true
+    pin: 2
+
+light:
+  - platform: monochromatic
+    id: led1
+    name: Led
+    output: builtin_led
+  - platform: monochromatic
+    id: display_bl
+    name: Backlight
+    output: backlight
+
+i2c:
+  - id: bus_a
+    scan: true
+    scl: 22
+    sda: 21
+
+sensor:
+  - platform: adc
+    pin: GPIO38
+    attenuation: 12db
+    update_interval: 10s
+    name: "Battery Voltage"
+    id: battery_voltage
+    icon: "mdi:car-battery"
+    filters:
+      - multiply: 2
+    
+  - platform: mpu6886
+    id: my_imu
+    address: 104
+    update_interval: 10ms
+    accel_x:
+      id: ax_id
+    accel_y:
+      id: ay_id
+    accel_z:
+      id: az_id
+    gyro_x:
+      id: gx_id
+    gyro_y:
+      id: gy_id
+    gyro_z:
+      id: gz_id
+  - platform: pulse_meter
+    pin: 
+      number: GPIO32
+      mode:
+        input: true
+        pullup: false
+    name: "Optical Encoder RPM"
+    unit_of_measurement: "RPM"
+    icon: "mdi:disc-alert"
+    id: rpm_sensor
+    internal_filter: 10us
+    timeout: 0.25s
+    filters:
+      - multiply: 0.03333
+      # 1. Average the raw high-frequency pulses down to a stable 10Hz rate
+      - throttle_average: 0.1s
+      # 2. Moving average using a standard C array (no extra #include needed)
+      - lambda: |-
+          static float window[20] = {0};
+          static int count = 0;
+          static int index = 0;
+
+          // If the encoder stopped (timeout sent 0) or is near zero, reset buffer and output 0 immediately
+          if (x <= 0.01f) {
+            count = 0;
+            index = 0;
+            return 0.0f;
+          }
+
+          // Store new sample in the circular buffer
+          window[index] = x;
+          index = (index + 1) % 20;
+          if (count < 20) {
+            count++;
+          }
+
+          // Calculate the average of the active samples
+          float sum = 0.0f;
+          for (int i = 0; i < count; i++) {
+            sum += window[i];
+          }
+          return sum / count;
+    
+  - platform: template
+    name: "IMU Pitch"
+    id: pitch_id
+    unit_of_measurement: "°"
+    accuracy_decimals: 1
+    update_interval: never 
+
+  - platform: template
+    name: "IMU Roll"
+    id: roll_id
+    unit_of_measurement: "°"
+    accuracy_decimals: 1
+    update_interval: never
+
+  - platform: template
+    name: "IMU Yaw"
+    id: yaw_id
+    unit_of_measurement: "°"
+    accuracy_decimals: 1
+    update_interval: never
+
+  - platform: template
+    name: "Battery Level"
+    id: battery_level
+    icon: "mdi:battery-charging-50" # You can choose any battery icon you like
+    unit_of_measurement: "%"
+    device_class: "battery"
+    state_class: "measurement"
+    lambda: |-
+      // This lambda uses a multi-point table to map voltage to a non-linear battery percentage,
+      // which more accurately reflects a real 1-cell LiPo/Li-Ion discharge curve.
+      // 
+      float voltage = id(battery_voltage).state;
+      float percentage = 0.0f;
+
+      if (voltage >= 4.20f) {
+        percentage = 100.0f;
+      } else if (voltage >= 4.00f) {
+        percentage = 90.0f + (voltage - 4.00f) * 100.0f;
+      } else if (voltage >= 3.80f) {
+        percentage = 75.0f + (voltage - 3.80f) * 150.0f;
+      } else if (voltage >= 3.60f) {
+        percentage = 60.0f + (voltage - 3.60f) * 150.0f;
+      } else if (voltage >= 3.40f) {
+        percentage = 45.0f + (voltage - 3.40f) * 150.0f;
+      } else if (voltage >= 3.30f) {
+        percentage = 30.0f + (voltage - 3.30f) * 150.0f;
+      } else if (voltage >= 3.20f) {
+        percentage = 15.0f + (voltage - 3.20f) * 150.0f;
+      } else if (voltage >= 3.10f) {
+        percentage = 5.0f + (voltage - 3.10f) * 100.0f;
+      } else {
+        percentage = 0.0f;
+      }
+      return clamp(percentage, 0.0f, 100.0f);
+    update_interval: 10s # Set how often you want the percentage to be recalculated.
+    
+binary_sensor:
+  - platform: gpio
+    id: binary_sensor_gpio_1
+    name: Button A
+    pin:
+      inverted: false
+      number: 37
+    on_press:
+      then:
+        - lambda: |-
+            global_madgwick.reset();
+            
+            // Force an immediate publish so the dashboard snaps instantly
+            id(pitch_id)->publish_state(0.0);
+            id(roll_id)->publish_state(0.0);
+            id(yaw_id)->publish_state(0.0);
+            id(rpm_sensor)->publish_state(0.0);
+        - binary_sensor.template.publish:
+            id: quality_check_passed
+            state: OFF
+        - output.set_level:
+              id: buzzer
+              level: 0%
+  - platform: gpio
+    id: binary_sensor_gpio_2
+    name: Button B
+    pin:
+      inverted: true
+      number: 39
+    on_multi_click:
+          # SINGLE CLICK: Toggle Display
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.5s
+        then:
+          - light.toggle: display_bl
+          - lambda: |
+              id(display_is_on) = !id(display_is_on);
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at most 0.5s
+          - ON for at most 0.5s
+          - OFF for at least 0.5s
+        then:
+          - lambda: |-
+              id(gyro_is_on) = !id(gyro_is_on);
+          - if:
+              condition:
+                lambda: 'return id(gyro_is_on);'
+              then:
+                - component.resume: my_imu
+              else:
+                - component.suspend: my_imu
+  - platform: template
+    name: "Quality Check Passed"
+    id: quality_check_passed
+
+  - platform: template
+    id: rpm_in_pass_band
+    internal: true
+    lambda: |-
+      if (id(rpm_sensor).has_state()) {
+        return id(rpm_sensor).state >= 248.0 && id(rpm_sensor).state <= 252.0;
+      }
+      return false;
+    filters:
+      - delayed_on: 2s
+    on_press:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(quality_check_passed).state;'
+            then:
+              - binary_sensor.template.publish:
+                  id: quality_check_passed
+                  state: ON
+              - script.execute: success_beep
+  - platform: template
+    name: "Moving"
+    id: assembly_moving
+    device_class: "moving"
+    lambda: |-
+      static float last_mag = 1.0f;
+      static int active_samples = 0;
+      if (isnan(id(ax_id).state) || isnan(id(ay_id).state)) {
+        return false;
+      }
+      float mag = sqrtf(id(ax_id).state * id(ax_id).state +
+                        id(ay_id).state * id(ay_id).state);
+      float delta = fabsf(mag - last_mag);
+      last_mag = mag;
+      if (delta > 0.18f) {
+        active_samples++;
+      } else {
+        active_samples = 0;
+      }
+      return active_samples >= 3;
+    filters:
+      - delayed_off: 2000ms
+    
+# 1. Enable the SPI bus for the M5StickC Plus 2 screen
+spi:
+  clk_pin: GPIO13
+  mosi_pin: GPIO15
+
+# 2. Import Google Fonts for the display UI
+font:
+  - file: "gfonts://Roboto"
+    id: font_title
+    size: 20
+  - file: "gfonts://Roboto"
+    id: font_rpm
+    size: 45
+
+# 3. Define the UI colors
+color:
+  - id: color_bg
+    hex: "000000"
+  - id: color_text
+    hex: "FFFFFF"
+  - id: color_accent
+    hex: "00FF7F" # Bright green for the live data
+  - id: color_red
+    hex: "FF0000"
+  - id: color_green
+    hex: "00FF00"
+
+# 4. Display Hardware & Rendering Block
+display:
+  - platform: st7789v
+    cs_pin: GPIO5
+    dc_pin: GPIO14
+    reset_pin: GPIO12
+    rotation: 270
+    lambda: |-
+      // Fill screen background
+      it.fill(id(color_bg));
+      if (!id(display_is_on)) {
+        return; 
+      }
+      // Header Text
+      it.print(120, 30, id(font_title), id(color_red), TextAlign::TOP_CENTER, "Rotational Speed");
+      
+      // Check if Quality Assessment passed
+      if (id(quality_check_passed).state) {
+        it.print(120, 65, id(font_title), id(color_green), TextAlign::CENTER, "QUALITY CHECK");
+        it.print(120, 90, id(font_title), id(color_green), TextAlign::CENTER, "PASSED");
+      } else {
+        // Normal RPM Display
+        if (id(rpm_sensor).has_state()) {
+          it.printf(120, 75, id(font_rpm), id(color_accent), TextAlign::CENTER, "%.0f RPM", id(rpm_sensor).state);
+        } else {
+          it.print(120, 75, id(font_rpm), id(color_text), TextAlign::CENTER, "--- RPM");
+        }
+      }
+      
+      it.printf(120, 2, id(font_title), id(color_text), TextAlign::TOP_CENTER, "ID: %s" , App.get_name().c_str());      
+      it.printf(180, 100, id(font_title), id(color_text), TextAlign::TOP_CENTER, "Bat: %.0f%%", id(battery_level).state);
+      Color gyro_color = id(gyro_is_on) ? id(color_green) : id(color_red);
+      it.filled_circle(10, 120, 5, gyro_color);   
+    model: TTGO_TDISPLAY_135X240
+    update_interval: 100ms

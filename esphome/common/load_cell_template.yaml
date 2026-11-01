@@ -1,0 +1,193 @@
+# /config/esphome/common/load_cell_template.yaml
+# Required vars:
+#   num: Load cell number
+#   dout_pin: HX711 DOUT GPIO pin
+#   clk_pin: HX711 CLK GPIO pin
+#   update_ms: Staggered HX711 polling interval (e.g., "97ms", "100ms")
+
+globals:
+  - id: load${num}_calibration_factor
+    type: float
+    restore_value: yes
+    initial_value: '1.0'
+
+  - id: load${num}_tare_value
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+number:
+  - platform: template
+    name: "Load ${num} Calibration Mass"
+    id: load${num}_calib_mass
+    optimistic: yes
+    restore_value: yes
+    initial_value: 500
+    min_value: 1
+    max_value: 20000
+    step: 0.1
+    unit_of_measurement: 'g'
+
+  - platform: template
+    name: "Load ${num} Average Part Weight"
+    id: load${num}_avg_part_weight
+    optimistic: yes
+    restore_value: yes
+    initial_value: 1.0
+    min_value: 0.01
+    max_value: 5000
+    step: 0.01
+    mode: box
+    unit_of_measurement: 'g'
+
+button:
+  - platform: template
+    name: "Load ${num} Tare"
+    on_press:
+      - lambda: |-
+          id(load${num}_tare_value) = id(load${num}_raw).state;
+          ESP_LOGD("main", "Load ${num} New Tare Value set to: %.2f", id(load${num}_tare_value));
+
+  - platform: template
+    name: "Load ${num} Calibrate Known Mass"
+    on_press:
+      - lambda: |-
+          float raw_value = id(load${num}_raw).state;
+          float known_mass = id(load${num}_calib_mass).state;
+          if (known_mass != 0.0) {
+            id(load${num}_calibration_factor) = (raw_value - id(load${num}_tare_value)) / known_mass;
+            ESP_LOGD("main", "Load ${num} New Calibration Factor set to: %.4f", id(load${num}_calibration_factor));
+          } else {
+            ESP_LOGE("main", "Cannot calibrate Load ${num} with a mass of 0.");
+          }
+
+sensor:
+  # 1. RAW Value (9-sample median discards momentary bit-read spikes)
+  - platform: hx711
+    name: "Load ${num} Raw Value"
+    dout_pin: ${dout_pin}
+    clk_pin: ${clk_pin}
+    gain: 128
+    update_interval: ${update_ms}
+    id: load${num}_raw
+    internal: True
+    filters:
+      - median:
+          window_size: 9
+          send_every: 1
+
+  # 2. Filtered Mass (Adaptive 1D Kalman + Continuous Thermal Drift Compensation)
+  - platform: template
+    name: "Load ${num} Mass"
+    id: load${num}_mass
+    icon: "mdi:scale-bathroom"
+    unit_of_measurement: 'g'
+    accuracy_decimals: 2
+    update_interval: 100ms
+    lambda: |-
+      float raw = id(load${num}_raw).state;
+      float factor = id(load${num}_calibration_factor);
+      if (factor == 0.0 || isnan(raw)) return 0.0;
+
+      static float estimate = 0.0;
+      static float err_estimate = 1.0;
+      static float thermal_anchor = 0.0;
+      static float thermal_offset_grams = 0.0;
+      static float last_tare_value = 0.0;
+      static int step_confirm_count = 0;
+      static bool initialized = false;
+
+      if (id(load${num}_tare_value) != last_tare_value) {
+        thermal_offset_grams = 0.0;
+        last_tare_value = id(load${num}_tare_value);
+        initialized = false;
+      }
+
+      float measured_mass = ((raw - id(load${num}_tare_value)) / factor) - thermal_offset_grams;
+
+      if (measured_mass > 10000.0 || measured_mass < -500.0) {
+        return id(load${num}_mass).state;
+      }
+
+      if (!initialized) {
+        estimate = measured_mass;
+        thermal_anchor = measured_mass;
+        initialized = true;
+        return estimate;
+      }
+
+      float diff = fabs(measured_mass - estimate);
+
+      if (diff > 1.2) {
+        step_confirm_count++;
+      } else {
+        step_confirm_count = 0;
+      }
+
+      float q = (step_confirm_count >= 3) ? 2.0 : 0.0005;
+      float r = 0.5;
+
+      if (diff <= 1.2 || step_confirm_count >= 3) {
+        err_estimate += q;
+        float kalman_gain = err_estimate / (err_estimate + r);
+        estimate = estimate + kalman_gain * (measured_mass - estimate);
+        err_estimate = (1.0 - kalman_gain) * err_estimate;
+      }
+
+      if (step_confirm_count >= 3 || fabs(estimate - thermal_anchor) >= 0.75) {
+        thermal_anchor = estimate;
+      } else {
+        float drift = estimate - thermal_anchor;
+        if (step_confirm_count == 0 && fabs(drift) > 0.02 && fabs(drift) < 0.45) {
+          float correction = drift * 0.005;
+          thermal_offset_grams += correction;
+          estimate -= correction;
+        }
+      }
+
+      if (fabs(estimate) < 0.25) {
+        return 0.0;
+      }
+
+      return estimate;
+
+  # 3. Item Counter (With Hand-in-Bin Stability Gate + Fractional Hysteresis)
+  - platform: template
+    name: "Load ${num} Item Count"
+    id: l${num}_item_count
+    icon: "mdi:counter"
+    unit_of_measurement: 'items'
+    accuracy_decimals: 0
+    update_interval: 200ms
+    lambda: |-
+      float current_mass = id(load${num}_mass).state;
+      float item_weight = id(load${num}_avg_part_weight).state;
+      if (item_weight <= 0.0 || isnan(item_weight) || isnan(current_mass)) {
+        return 0.0;
+      }
+
+      static float prev_mass = 0.0;
+      static int stable_ticks = 0;
+      static int locked_count = 0;
+
+      if (fabs(current_mass - prev_mass) < 0.5) {
+        stable_ticks++;
+      } else {
+        stable_ticks = 0;
+      }
+      prev_mass = current_mass;
+
+      if (stable_ticks >= 4) {
+        float exact_items = current_mass / item_weight;
+        if (fabs(exact_items - (float)locked_count) >= 0.60) {
+          locked_count = round(exact_items);
+        }
+      }
+
+      if (locked_count < 0) locked_count = 0;
+      return locked_count;
+    filters:
+      - clamp:
+          min_value: 0
+          max_value: 200
+          ignore_out_of_range: True
