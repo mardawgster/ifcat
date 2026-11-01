@@ -1,0 +1,5 @@
+type: custom:imu-3d-card
+title: Artifact Real-Time Orientation
+pitch_entity: sensor.artifact_prototype_imu_pitch
+roll_entity: sensor.artifact_prototype_imu_roll
+yaw_entity: sensor.artifact_prototype_imu_yaw

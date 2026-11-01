@@ -1,0 +1,2121 @@
+### THIS IS THE FULL 6 STATION ASSEMBLY LINE DASHBOARD CONFIGURATION YAML CODE
+### DIRECTLY PASTE INTO DASHBOARD CONFIGURATION IN HOME ASSISTANT
+
+button_card_templates:
+  station_bucket_kpi:
+    show_state: false
+    show_icon: false
+    variables:
+      station: 3
+      bin: 1
+      title: ''
+      cycle_entity: ''
+    name: '[[[ return variables.title || `BUCKET ${variables.bin}`; ]]]'
+    custom_fields:
+      part_badge: |
+        [[[
+          let p_id = `input_select.assembly_station_${variables.station}_load_${variables.bin}_part`;
+          let w_id = `number.station_${variables.station}_assembly_station_${variables.station}_load_${variables.bin}_average_part_weight`;
+          let p = states[p_id]?.state || 'Unassigned';
+          let w = states[w_id]?.state || '0';
+          return `${p} (${Number(w).toFixed(2)}g)`;
+        ]]]
+      count_box: |
+        [[[
+          return `<div style="font-size: 28px; font-weight: 800; color: #e2e8f0;">${entity.state} <span style="font-size: 12px; font-weight: normal; color: #94a3b8;">pcs</span></div>
+                  <div style="font-size: 10px; color: #e2e8f0; text-transform: uppercase;">Item Count</div>`;
+        ]]]
+      mass_box: |
+        [[[
+          let m_id = `sensor.assembly_station_${variables.station}_load_${variables.bin}_mass`;
+          let m = states[m_id]?.state || '0.0';
+          return `<div style="font-size: 20px; font-weight: 700; color: #e2e8f0;">${Number(m).toFixed(1)} <span style="font-size: 12px; font-weight: normal; color: #94a3b8;">g</span></div>
+                  <div style="font-size: 10px; color: #e2e8f0; text-transform: uppercase;">Net Mass</div>`;
+        ]]]
+      cycle_box: |
+        [[[
+          let c_id = variables.cycle_entity || `sensor.load_${variables.bin}_item_count_cycle_time_2`;
+          let c = states[c_id]?.state || '0.0';
+          return `<div style="font-size: 20px; font-weight: 700; color: #e2e8f0;">${Number(c).toFixed(1)} <span style="font-size: 12px; font-weight: normal; color: #94a3b8;">s</span></div>
+                  <div style="font-size: 10px; color: #e2e8f0; text-transform: uppercase;">Cycle Time</div>`;
+        ]]]
+    styles:
+      card:
+        - background-color: '#BA0C2F'
+        - border: '1px solid #000000'
+        - border-radius: 12px
+        - padding: 14px 16px
+      grid:
+        - grid-template-areas: '"n part_badge part_badge" "count_box mass_box cycle_box"'
+        - grid-template-columns: 1.2fr 1fr 1fr
+        - grid-template-rows: auto auto
+        - row-gap: 12px
+      name:
+        - justify-self: start
+        - font-size: 13px
+        - font-weight: bold
+        - color: '#FFFFFF'
+        - letter-spacing: 1px
+      custom_fields:
+        part_badge:
+          - justify-self: end
+          - font-size: 11px
+          - font-weight: '600'
+          - color: '#00ff88'
+          - background: rgba(0, 0, 0, 0.35)
+          - padding: 2px 8px
+          - border-radius: 6px
+        count_box:
+          - justify-self: start
+          - text-align: left
+        mass_box:
+          - justify-self: center
+          - text-align: center
+          - align-self: end
+        cycle_box:
+          - justify-self: end
+          - text-align: right
+          - align-self: end
+views:
+  - type: sections
+    max_columns: 4
+    path: ''
+    icon: mdi:numeric-1-box-outline
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: '# Station 1'
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.s31plug_s1_relay
+        name: Station Power
+        icon: mdi:power
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: binary_sensor.station1presence
+        name: Operator
+        icon: mdi:account-check
+      - type: entity
+        entity: sensor.assembly_line_environment_temperature
+      - type: entity
+        entity: sensor.assembly_line_environment_humidity
+      - type: entity
+        entity: sensor.assembly_line_environment_pressure
+      - type: entity
+        entity: sensor.assembly_line_environment_carbon_dioxide
+      - type: entity
+        entity: sensor.station12lux
+    sections:
+      - type: grid
+        column_span: 4
+        cards:
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_1_item_count
+                variables:
+                  station: 3
+                  bin: 1
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_1_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_1_load_1_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    tap_action:
+                      action: toggle
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_1_load_1_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_1_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_2_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_2_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_2_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_2_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_2_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_3_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_3_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_3_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_3_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_3_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_4_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_4_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_4_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_4_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_4_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_5_item_count
+                variables:
+                  station: 3
+                  bin: 5
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_5_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_5_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_5_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_5_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_6_item_count
+                variables:
+                  station: 3
+                  bin: 6
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_6_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_6_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_6_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_6_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_7_item_count
+                variables:
+                  station: 3
+                  bin: 7
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_7_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_7_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_7_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_7_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_1_load_8_item_count
+                variables:
+                  station: 3
+                  bin: 8
+                  title: SIDE LOAD (BUCKET 8)
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_1_load_8_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_1_load_8_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_1_load_8_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_1_load_8_calibration_mass
+    cards: []
+  - type: sections
+    max_columns: 4
+    path: ''
+    icon: mdi:numeric-2-box-outline
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: '# Station 2'
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.s31plug_s2_relay
+        name: Station Power
+        icon: mdi:power
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: binary_sensor.station2presence
+        name: Operator
+        icon: mdi:account-check
+      - type: entity
+        entity: sensor.assembly_line_environment_temperature
+      - type: entity
+        entity: sensor.assembly_line_environment_humidity
+      - type: entity
+        entity: sensor.assembly_line_environment_pressure
+      - type: entity
+        entity: sensor.assembly_line_environment_carbon_dioxide
+      - type: entity
+        entity: sensor.station12lux
+    sections:
+      - type: grid
+        column_span: 4
+        cards:
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_1_item_count
+                variables:
+                  station: 3
+                  bin: 1
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_1_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_2_load_1_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    tap_action:
+                      action: toggle
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_2_load_1_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_1_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_2_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_2_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_2_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_2_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_2_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_3_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_3_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_3_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_3_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_3_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_4_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_4_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_4_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_4_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_4_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_5_item_count
+                variables:
+                  station: 3
+                  bin: 5
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_5_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_5_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_5_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_5_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_6_item_count
+                variables:
+                  station: 3
+                  bin: 6
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_6_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_6_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_6_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_6_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_7_item_count
+                variables:
+                  station: 3
+                  bin: 7
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_7_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_7_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_7_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_7_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_2_load_8_item_count
+                variables:
+                  station: 3
+                  bin: 8
+                  title: SIDE LOAD (BUCKET 8)
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_2_load_8_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_2_load_8_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_2_load_8_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_2_load_8_calibration_mass
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: light.assembly_station_2_led_1
+              - entity: light.assembly_station_2_led_2
+              - entity: light.assembly_station_2_led_3
+              - entity: light.assembly_station_2_led_4
+              - entity: light.assembly_station_2_led_5
+              - entity: light.assembly_station_2_led_6
+              - entity: light.assembly_station_2_led_7
+              - entity: light.assembly_station_2_station_2_led_strip
+        column_span: 1
+    cards: []
+  - type: sections
+    max_columns: 4
+    path: ''
+    icon: mdi:numeric-3-box-outline
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: '# Station 3'
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.s31plug_s3_relay
+        name: Station Power
+        icon: mdi:power
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: binary_sensor.station3presence
+        name: Operator
+        icon: mdi:account-check
+      - type: entity
+        entity: sensor.assembly_line_environment_temperature
+      - type: entity
+        entity: sensor.assembly_line_environment_humidity
+      - type: entity
+        entity: sensor.assembly_line_environment_pressure
+      - type: entity
+        entity: sensor.assembly_line_environment_carbon_dioxide
+      - type: entity
+        entity: sensor.station34lux
+    sections:
+      - type: grid
+        column_span: 4
+        cards:
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_1_item_count
+                variables:
+                  station: 3
+                  bin: 1
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_1_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_3_load_1_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    tap_action:
+                      action: toggle
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_3_load_1_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_1_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_2_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_2_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_2_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_2_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_2_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_3_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_3_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_3_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_3_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_3_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_4_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_4_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_4_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_4_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_4_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_5_item_count
+                variables:
+                  station: 3
+                  bin: 5
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_5_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_5_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_5_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_5_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_6_item_count
+                variables:
+                  station: 3
+                  bin: 6
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_6_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_6_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_6_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_6_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_7_item_count
+                variables:
+                  station: 3
+                  bin: 7
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_7_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_7_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_7_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_7_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_3_load_8_item_count
+                variables:
+                  station: 3
+                  bin: 8
+                  title: SIDE LOAD (BUCKET 8)
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_3_load_8_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_3_load_8_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_3_load_8_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_3_load_8_calibration_mass
+    cards: []
+  - type: sections
+    max_columns: 4
+    path: ''
+    icon: mdi:numeric-4-box-outline
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: '# Station 4'
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.s31plug_s4_relay
+        name: Station Power
+        icon: mdi:power
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: binary_sensor.station4presence
+        name: Operator
+        icon: mdi:account-check
+      - type: entity
+        entity: sensor.assembly_line_environment_temperature
+      - type: entity
+        entity: sensor.assembly_line_environment_humidity
+      - type: entity
+        entity: sensor.assembly_line_environment_pressure
+      - type: entity
+        entity: sensor.assembly_line_environment_carbon_dioxide
+      - type: entity
+        entity: sensor.station34lux
+    sections:
+      - type: grid
+        column_span: 4
+        cards:
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_1_item_count
+                variables:
+                  station: 3
+                  bin: 1
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_1_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_4_load_1_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    tap_action:
+                      action: toggle
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_4_load_1_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_1_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_2_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_2_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_2_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_2_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_2_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_3_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_3_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_3_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_3_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_3_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_4_item_count
+                variables:
+                  station: 3
+                  bin: 4
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_4_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_4_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_4_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_4_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_5_item_count
+                variables:
+                  station: 3
+                  bin: 5
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_5_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_5_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_5_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_5_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_6_item_count
+                variables:
+                  station: 3
+                  bin: 6
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_6_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_6_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_6_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_6_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_7_item_count
+                variables:
+                  station: 3
+                  bin: 7
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_7_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_7_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_7_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_7_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_4_load_8_item_count
+                variables:
+                  station: 3
+                  bin: 8
+                  title: SIDE LOAD (BUCKET 8)
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_4_load_8_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_4_load_8_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_4_load_8_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_4_load_8_calibration_mass
+    cards: []
+  - type: sections
+    max_columns: 4
+    path: ''
+    icon: mdi:numeric-5-box-outline
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: '# Station 5'
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.s31plug_s5_relay
+        name: Station Power
+        icon: mdi:power
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: binary_sensor.station5presence
+        name: Operator
+        icon: mdi:account-check
+      - type: entity
+        entity: sensor.assembly_line_environment_temperature
+      - type: entity
+        entity: sensor.assembly_line_environment_humidity
+      - type: entity
+        entity: sensor.assembly_line_environment_pressure
+      - type: entity
+        entity: sensor.assembly_line_environment_carbon_dioxide
+      - type: entity
+        entity: sensor.station56lux
+    sections:
+      - type: grid
+        column_span: 4
+        cards:
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_1_item_count
+                variables:
+                  station: 3
+                  bin: 1
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_1_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_5_load_1_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    tap_action:
+                      action: toggle
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_5_load_1_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_1_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_2_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_2_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_2_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_2_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_2_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_3_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_3_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_3_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_3_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_3_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_4_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_4_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_4_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_4_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_4_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_5_item_count
+                variables:
+                  station: 3
+                  bin: 5
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_5_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_5_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_5_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_5_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_6_item_count
+                variables:
+                  station: 3
+                  bin: 6
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_6_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_6_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_6_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_6_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_7_item_count
+                variables:
+                  station: 3
+                  bin: 7
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_7_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_7_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_7_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_7_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_5_load_8_item_count
+                variables:
+                  station: 3
+                  bin: 8
+                  title: SIDE LOAD (BUCKET 8)
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_5_load_8_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_5_load_8_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_5_load_8_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_5_load_8_calibration_mass
+    cards: []
+  - type: sections
+    max_columns: 4
+    path: ''
+    icon: mdi:numeric-6-box-outline
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: '# Station 6'
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.s31plug_s6_relay
+        name: Station Power
+        icon: mdi:power
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: binary_sensor.station6presence
+        name: Operator
+        icon: mdi:account-check
+      - type: entity
+        entity: sensor.assembly_line_environment_temperature
+      - type: entity
+        entity: sensor.assembly_line_environment_humidity
+      - type: entity
+        entity: sensor.assembly_line_environment_pressure
+      - type: entity
+        entity: sensor.assembly_line_environment_carbon_dioxide
+      - type: entity
+        entity: sensor.station56lux
+    sections:
+      - type: grid
+        column_span: 4
+        cards:
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_1_item_count
+                variables:
+                  station: 3
+                  bin: 1
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_1_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_6_load_1_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    tap_action:
+                      action: toggle
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: button.assembly_station_6_load_1_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_1_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_2_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_2_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_2_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_2_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_2_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_3_item_count
+                variables:
+                  station: 3
+                  bin: 3
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_3_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_3_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_3_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_3_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_4_item_count
+                variables:
+                  station: 3
+                  bin: 2
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_4_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_4_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_4_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_4_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_5_item_count
+                variables:
+                  station: 3
+                  bin: 5
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_5_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_5_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_5_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_5_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_6_item_count
+                variables:
+                  station: 3
+                  bin: 6
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_6_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_6_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_6_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_6_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_7_item_count
+                variables:
+                  station: 3
+                  bin: 7
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_7_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_7_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_7_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_7_calibration_mass
+          - type: vertical-stack
+            grid_options:
+              columns: 12
+            cards:
+              - type: custom:button-card
+                template: station_bucket_kpi
+                entity: sensor.assembly_station_6_load_8_item_count
+                variables:
+                  station: 3
+                  bin: 8
+                  title: SIDE LOAD (BUCKET 8)
+              - type: horizontal-stack
+                cards:
+                  - type: tile
+                    entity: input_select.assembly_station_6_load_8_part
+                    name: Part
+                    hide_state: true
+                    features:
+                      - type: select-options
+                  - type: button
+                    entity: button.assembly_station_6_load_8_tare
+                    name: Tare
+                    icon: mdi:numeric-0
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                  - type: button
+                    entity: button.assembly_station_6_load_8_calibrate_known_mass
+                    name: Calibrate
+                    icon: mdi:weight-gram
+                    show_name: true
+                    tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      entity: number.assembly_station_6_load_8_calibration_mass
+    cards: []
+  - type: sections
+    max_columns: 4
+    title: Quality
+    path: quality
+    icon: mdi:microscope
+    sections:
+      - type: grid
+        cards:
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - type: heading
+                heading_style: title
+                heading: Quality Controls
+                icon: mdi:shield-check-outline
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: START QUALITY TEST
+                    icon: mdi:microscope
+                    tap_action:
+                      action: perform-action
+                      perform_action: rest_command.quality_test
+                    styles:
+                      card:
+                        - background: >-
+                            linear-gradient(135deg, rgba(0, 255, 136, 0.18) 0%,
+                            #141923 100%)
+                        - border: '2px solid #00ff88'
+                        - border-radius: 12px
+                        - padding: 16px 8px
+                        - height: 90px
+                        - box-shadow: 0 0 15px rgba(0, 255, 136, 0.15)
+                      icon:
+                        - width: 34px
+                        - height: 34px
+                        - color: '#00ff88'
+                        - filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.5))
+                      name:
+                        - font-size: 12px
+                        - font-weight: '800'
+                        - color: '#e2e8f0'
+                        - letter-spacing: 0.8px
+                        - margin-top: 6px
+                  - type: custom:button-card
+                    name: EMERGENCY STOP
+                    icon: mdi:alert-octagon
+                    tap_action:
+                      action: perform-action
+                      perform_action: rest_command.stepper_stop
+                    styles:
+                      card:
+                        - background: 'linear-gradient(135deg, #BA0C2F 0%, #5c0517 100%)'
+                        - border: '2px solid #ff4d4d'
+                        - border-radius: 12px
+                        - padding: 16px 8px
+                        - height: 90px
+                        - box-shadow: 0 0 18px rgba(186, 12, 47, 0.45)
+                      icon:
+                        - width: 34px
+                        - height: 34px
+                        - color: '#ffffff'
+                        - filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5))
+                      name:
+                        - font-size: 12px
+                        - font-weight: '900'
+                        - color: '#ffffff'
+                        - letter-spacing: 0.8px
+                        - margin-top: 6px
+              - type: tile
+                entity: input_number.stepper_rpm
+                name: Target Stepper RPM
+                icon: mdi:rotate-right
+                color: amber
+                vertical: false
+                features:
+                  - type: numeric-input
+                    style: buttons
+                features_position: bottom
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: binary_sensor.assembly_01_quality_check_passed
+              - entity: binary_sensor.assembly_02_quality_check_passed
+              - entity: binary_sensor.assembly_03_quality_check_passed
+              - entity: binary_sensor.assembly_04_quality_check_passed
+              - entity: binary_sensor.assembly_05_quality_check_passed
+              - entity: binary_sensor.assembly_06_quality_check_passed
+              - entity: binary_sensor.assembly_07_quality_check_passed
+              - entity: binary_sensor.assembly_08_quality_check_passed
+              - entity: binary_sensor.assembly_09_quality_check_passed
+              - entity: binary_sensor.assembly_10_quality_check_passed
+              - entity: binary_sensor.assembly_11_quality_check_passed
+              - entity: binary_sensor.assembly_12_quality_check_passed
+            title: Quality Check

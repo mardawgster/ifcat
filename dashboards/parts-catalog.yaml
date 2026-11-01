@@ -1,0 +1,34 @@
+type: vertical-stack
+cards:
+  - type: entities
+    title: Manage Parts Catalog
+    show_header_toggle: false
+    entities:
+      - entity: input_text.catalog_part_name
+        name: 1. Enter Part Name
+      - entity: input_number.catalog_part_weight
+        name: 2. Enter Single Part Weight (g)
+      - type: button
+        name: Save / Update Part in Table
+        action_name: SAVE PART
+        icon: mdi:content-save-check
+        tap_action:
+          action: call-service
+          service: script.catalog_add_or_update_part
+      - type: button
+        name: Remove Part from Table (by Name)
+        action_name: DELETE
+        icon: mdi:trash-can-outline
+        tap_action:
+          action: call-service
+          service: script.catalog_delete_part
+  - type: markdown
+    content: >
+      | Part Name | Average Weight (g) | {% set parts =
+      state_attr('sensor.master_parts_catalog', 'parts') or {} %} {% if parts |
+      count > 0 %}
+        {% for name, weight in parts | dictsort %}
+      | **{{ name }}** | `{{ "%.2f"|format(weight) }} g` |
+        {% endfor %}
+      {% else %} | *No parts in catalog yet — add one below!* | *--* | {% endif
+      %}

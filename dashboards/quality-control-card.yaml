@@ -1,0 +1,72 @@
+type: grid
+columns: 1
+square: false
+cards:
+  - type: heading
+    heading_style: title
+    heading: Quality Controls
+    icon: mdi:shield-check-outline
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        name: START QUALITY TEST
+        icon: mdi:microscope
+        tap_action:
+          action: perform-action
+          perform_action: rest_command.quality_test
+        styles:
+          card:
+            - background: >-
+                linear-gradient(135deg, rgba(0, 255, 136, 0.18) 0%, #141923
+                100%)
+            - border: '2px solid #00ff88'
+            - border-radius: 12px
+            - padding: 16px 8px
+            - height: 90px
+            - box-shadow: 0 0 15px rgba(0, 255, 136, 0.15)
+          icon:
+            - width: 34px
+            - height: 34px
+            - color: '#00ff88'
+            - filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.5))
+          name:
+            - font-size: 12px
+            - font-weight: '800'
+            - color: '#e2e8f0'
+            - letter-spacing: 0.8px
+            - margin-top: 6px
+      - type: custom:button-card
+        name: EMERGENCY STOP
+        icon: mdi:alert-octagon
+        tap_action:
+          action: perform-action
+          perform_action: rest_command.stepper_stop
+        styles:
+          card:
+            - background: 'linear-gradient(135deg, #BA0C2F 0%, #5c0517 100%)'
+            - border: '2px solid #ff4d4d'
+            - border-radius: 12px
+            - padding: 16px 8px
+            - height: 90px
+            - box-shadow: 0 0 18px rgba(186, 12, 47, 0.45)
+          icon:
+            - width: 34px
+            - height: 34px
+            - color: '#ffffff'
+            - filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5))
+          name:
+            - font-size: 12px
+            - font-weight: '900'
+            - color: '#ffffff'
+            - letter-spacing: 0.8px
+            - margin-top: 6px
+  - type: tile
+    entity: input_number.stepper_rpm
+    name: Target Stepper RPM
+    icon: mdi:rotate-right
+    color: amber
+    vertical: false
+    features:
+      - type: numeric-input
+        style: buttons
+    features_position: bottom

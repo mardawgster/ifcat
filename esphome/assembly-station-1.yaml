@@ -1,0 +1,39 @@
+### DO NOT USE THIS CONFIGURATION FILE DIRECTLY.
+### INSTEAD, CREATE A NEW ESPHOME DEVICE AND USE THIS FILE AS 
+### AN EXAMPLE OF HOW TO STRUCTURE YOUR CONFIGURATION.
+
+esphome:
+  name: "assembly-station-1"
+  friendly_name: Assembly Station 1
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: WARN
+
+api:
+  encryption:
+    key: "*************"
+
+ota:
+  platform: esphome
+  password: "********************"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "Assembly-Station-1"
+    password: "*********"
+
+substitutions:
+  station_id: "01"
+  station_num: "1"
+
+packages: 
+  shared_logic: !include 
+    file: common/assembly_station_config.yaml
