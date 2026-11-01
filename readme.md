@@ -22,7 +22,6 @@ A modular, scalable firmware and Home Assistant backend architecture for a multi
     │   ├── imu-visualizer.yaml               # Lovelace YAML: Artifact IMU Visualizer card
     │   ├── parts-catalog.yaml                # Lovelace YAML: Parts catalog modification card
     │   └── quality-control-card.yaml         # Lovelace YAML: Quality Check HUD graphic & tactile Quality Controls card
-
     └── esphome/
         ├── assembly-station-1.yaml           # Station 1 node definition (substitutions, Wi-Fi/OTA, includes common config)
         ├── assembly-01.yaml              # Smart artifact ESP node definition (includes artifact_config.yaml)
