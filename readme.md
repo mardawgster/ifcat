@@ -104,7 +104,7 @@ Raw HX711 load cell readings are susceptible to ESP32 Wi-Fi current dips, bit-ba
 
 * **Staggered Polling & Spike Rejection (`load_raw`):** The 8 HX711 sensors per station are polled at staggered intervals (`93ms` to `107ms`) to prevent CPU lockups during `100ms` MQTT broadcasts. A 9-sample moving median filter discards momentary bit-shift glitches up to `400ms` long.
 * **Adaptive 1D Kalman Filter (`load_mass`):** Dynamically switches process noise covariance ($Q$) between ultra-smooth resting tracking ($Q = 0.0005$) and instantaneous step response ($Q = 2.0$) when a weight change $> 1.2\text{ g}$ is confirmed for 3 consecutive ticks (`300ms`).
-* **Flash-Safe Continuous Thermal & Creep Compensation:** Tracks an internal `thermal_anchor` in RAM. Slow, sub-0.45 g ambient temperature drift and mechanical strain-gauge creep are bled off at $0.5\%$ per tick without writing to ESP32 NVS flash memory—preserving flash lifespan while keeping bins zeroed across HVAC swings.
+* **Flash-Safe Continuous Thermal & Creep Compensation:** Tracks an internal `thermal_anchor` in RAM. Continuous ambient temperature drift and mechanical strain-gauge creep are bled off at $0.5\%$ per tick without writing to ESP32 NVS flash memory. Maximum correction speeds are clamped to prevent fighting physical settling vibrations, completely eliminating stepped "dead zone" drift on the graphs.
 * **"Hand-in-Bin" Stability Gate & Fractional Hysteresis (`l_item_count`):** Prevents false item-count spikes when an operator reaches into a bin. The item counter freezes whenever the bin weight is actively changing ($\Delta m \ge 0.5\text{ g}$) and only updates after the scale settles for 4 consecutive ticks (`800ms`), using a $\pm 0.60\text{ item}$ deadband to eliminate rounding flicker.
 
 ### 2. Smart Artifact Telemetry, IMU Fusion & On-Device Display (`artifact_config.yaml`)
@@ -255,19 +255,20 @@ packages:
 
 ### 1. Load Cell DSP Parameters (`esphome/common/load_cell_template.yaml`)
 
-| Parameter / Variable | Location | Default | Description & Tuning Guidance |
-| :--- | :--- | :--- | :--- |
-| `gain` | `sensor.hx711` | `128` | HX711 Channel A PGA gain (`128` or `64`). `128` provides 1 extra bit of noise-free resolution. Recalibrate after changing. |
-| `window_size` | `sensor.hx711` $\rightarrow$ `median` | `9` | Number of raw samples in the median filter. Rejects up to $\frac{N-1}{2}$ consecutive corrupted samples (`400ms` at `100ms` polling). |
-| `diff > 1.2` | `load${num}_mass` lambda | `1.2` ($\text{g}$) | Step-detection threshold. Lower to `0.4` if measuring micro-parts under $0.8\text{ g}$; increase to `2.5` in high-vibration environments. |
-| `step_confirm_count >= 3` | `load${num}_mass` lambda | `3` (ticks) | Number of consecutive `100ms` ticks a weight jump must persist to trigger fast Kalman response. |
-| `q` (Resting / Step) | `load${num}_mass` lambda | `0.0005` / `2.0` | Kalman process noise covariance ($Q$). Lower resting `q` (`0.0001`) for heavier smoothing; increase step `q` for faster jumps. |
-| `r` | `load${num}_mass` lambda | `0.5` | Kalman measurement noise covariance ($R$). Increase (e.g., `1.0`) if raw load cell noise is high. |
-| `fabs(drift) < 0.45` | `load${num}_mass` lambda | `0.45` ($\text{g}$) | Upper ceiling for thermal drift compensation. Drift smaller than this is slowly zeroed out at $0.5\%$ per tick (`0.005`). |
-| `fabs(estimate) < 0.25` | `load${num}_mass` lambda | `0.25` ($\text{g}$) | Empty-bin zero snap threshold. Readings within $\pm 0.25\text{ g}$ of zero report `0.00 g`. |
-| `fabs(current_mass - prev_mass) < 0.5` | `l${num}_item_count` lambda | `0.5` ($\text{g}$) | Stability gate threshold. If mass moves by $\ge 0.5\text{ g}$ between `200ms` ticks (hand in bin), the item counter freezes. |
-| `stable_ticks >= 4` | `l${num}_item_count` lambda | `4` (ticks) | Settling time ($4 \times 200\text{ ms} = 800\text{ ms}$) required after a hand leaves the bin before the item count updates. |
-| `>= 0.60` | `l${num}_item_count` lambda | `0.60` (items) | Fractional hysteresis deadband. Prevents item count from flickering when weight sits near a `0.5` rounding boundary. |
+| Parameter / Variable | Location | Default | Description & Tuning Guidance | 
+| ----- | ----- | ----- | ----- | 
+| `gain` | `sensor.hx711` | `128` | HX711 Channel A PGA gain (`128` or `64`). `128` provides 1 extra bit of noise-free resolution. Recalibrate after changing. | 
+| `window_size` | `sensor.hx711` $\rightarrow$ `median` | `9` | Number of raw samples in the median filter. Rejects up to $\frac{N-1}{2}$ consecutive corrupted samples (`400ms` at `100ms` polling). | 
+| `diff > 1.2` | `load${num}_mass` lambda | `1.2` ($\text{g}$) | Step-detection threshold. Lower to `0.4` if measuring micro-parts under $0.8\text{ g}$; increase to `2.5` in high-vibration environments. | 
+| `step_confirm_count >= 3` | `load${num}_mass` lambda | `3` (ticks) | Number of consecutive `100ms` ticks a weight jump must persist to trigger fast Kalman response. | 
+| `q` (Resting / Step) | `load${num}_mass` lambda | `0.0005` / `2.0` | Kalman process noise covariance ($Q$). Lower resting `q` (`0.0001`) for heavier smoothing; increase step `q` for faster jumps. | 
+| `r` | `load${num}_mass` lambda | `0.5` | Kalman measurement noise covariance ($R$). Increase (e.g., `1.0`) if raw load cell noise is high. | 
+| `fabs(drift) > 0.05` | `load${num}_mass` lambda | `0.05` ($\text{g}$) | Micro-noise ignore threshold. Prevents the thermal compensator from chasing minor sensor jitter under $0.05\text{g}$. | 
+| `correction_max` | `load${num}_mass` lambda | $\pm 0.01$ ($\text{g}$) | Clamps maximum speed of thermal compensation so it does not falsely absorb physical settling after a part is placed. | 
+| `fabs(estimate) < 0.25` | `load${num}_mass` lambda | `0.25` ($\text{g}$) | Empty-bin zero snap threshold. Readings within $\pm 0.25\text{ g}$ of zero report `0.00 g`. | 
+| `fabs(current_mass - prev_mass) < 0.5` | `l${num}_item_count` lambda | `0.5` ($\text{g}$) | Stability gate threshold. If mass moves by $\ge 0.5\text{ g}$ between `200ms` ticks (hand in bin), the item counter freezes. | 
+| `stable_ticks >= 4` | `l${num}_item_count` lambda | `4` (ticks) | Settling time ($4 \times 200\text{ ms} = 800\text{ ms}$) required after a hand leaves the bin before the item count updates. | 
+| `>= 0.60` | `l${num}_item_count` lambda | `0.60` (items) | Fractional hysteresis deadband. Prevents item count from flickering when weight sits near a `0.5` rounding boundary. | 
 
 ### 2. Smart Artifact IMU, Optical RPM & Visualizer Parameters (`artifact_config.yaml`, `madgwick_sensor.h`, `imu-visualizer.js`)
 
